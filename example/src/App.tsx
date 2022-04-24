@@ -1,18 +1,17 @@
 import * as React from 'react';
-
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-check-rooting';
+import { StyleSheet, Text, View } from 'react-native';
+import { isDeviceRooted } from 'react-native-check-rooting';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [result, setResult] = React.useState<boolean>();
 
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
+    isDeviceRooted().then(setResult);
+  }, [result]);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>is Device Rooted: {`${result}`}</Text>
     </View>
   );
 }

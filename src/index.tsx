@@ -17,6 +17,6 @@ const CheckRooting = NativeModules.CheckRooting
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return CheckRooting.multiply(a, b);
+export function isDeviceRooted(): Promise<boolean> {
+  return CheckRooting.isDeviceRooted();
 }
