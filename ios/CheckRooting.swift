@@ -1,7 +1,6 @@
 import UIKit
 @objc(CheckRooting)
 class CheckRooting: NSObject {
-    
     @objc(isDeviceRooted:withRejecter:)
     func isDeviceRooted(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         do {
@@ -13,49 +12,52 @@ class CheckRooting: NSObject {
     }
 
     private func isJailbroken() throws -> Bool {
-        #if !TARGET_IPHONE_SIMULATOR
-            if let url = URL(string: "cydia://package/com.example.package") {
-                if FileManager.default.fileExists(atPath: "/Applications/Cydia.app") ||
-                    FileManager.default.fileExists(atPath: "/Library/MobileSubstrate/MobileSubstrate.dylib") ||
-                    FileManager.default.fileExists(atPath: "/bin/bash") ||
-                    FileManager.default.fileExists(atPath: "/usr/sbin/sshd") ||
-                    FileManager.default.fileExists(atPath: "/etc/apt") ||
-                    FileManager.default.fileExists(atPath: "/private/var/lib/apt/") ||
-                    UIApplication.shared.canOpenURL(url)
-                {
-                    return true
-                }
-            }
-
-            if let file = fopen("/bin/bash", "r") {
-                fclose(file)
-                return true
-            }
-            if let file = fopen("/Applications/Cydia.app", "r") {
-                fclose(file)
-                return true
-            }
-            if let file = fopen("/Library/MobileSubstrate/MobileSubstrate.dylib", "r") {
-                fclose(file)
-                return true
-            }
-            if let file = fopen("/usr/sbin/sshd", "r") {
-                fclose(file)
-                return true
-            }
-            if let file = fopen("/etc/apt", "r") {
-                fclose(file)
-                return true
-            }
-
-            do {
-                try "This is a test.".write(toFile: "/private/jailbreak.txt", atomically: true, encoding: .utf8)
-                try FileManager.default.removeItem(atPath: "/private/jailbreak.txt")
-            } catch {
-                return true
-            }
-
+        guard let cydiaUrlScheme = NSURL(string: "cydia://package/com.example.package") else { return false }
+        if UIApplication.shared.canOpenURL(cydiaUrlScheme as URL) {
+            return true
+        }
+        #if arch(i386) || arch(x86_64)
+            return false
         #endif
+
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: "/Applications/Cydia.app") ||
+            fileManager.fileExists(atPath: "/Library/MobileSubstrate/MobileSubstrate.dylib") ||
+            fileManager.fileExists(atPath: "/bin/bash") ||
+            fileManager.fileExists(atPath: "/usr/sbin/sshd") ||
+            fileManager.fileExists(atPath: "/etc/apt") ||
+            fileManager.fileExists(atPath: "/usr/bin/ssh") ||
+            fileManager.fileExists(atPath: "/private/var/lib/apt")
+        {
+            return true
+        }
+        if canOpen(path: "/Applications/Cydia.app") ||
+            canOpen(path: "/Library/MobileSubstrate/MobileSubstrate.dylib") ||
+            canOpen(path: "/bin/bash") ||
+            canOpen(path: "/usr/sbin/sshd") ||
+            canOpen(path: "/etc/apt") ||
+            canOpen(path: "/usr/bin/ssh")
+        {
+            return true
+        }
+        let path = "/private/" + NSUUID().uuidString
+        do {
+            try "anyString".write(toFile: path, atomically: true, encoding: String.Encoding.utf8)
+            try fileManager.removeItem(atPath: path)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    func canOpen(path: String) -> Bool {
+        let file = fopen(path, "r")
+        guard file != nil else { return false }
+        fclose(file)
+        return true
+    }
+
+    @objc static func requiresMainQueueSetup() -> Bool {
         return false
     }
 }
