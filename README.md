@@ -4,18 +4,35 @@ Check rooting
 
 ## Installation
 
-```sh
-npm install react-native-check-rooting
+package.json
+```
+"dependencies": {
+  "react": "17.0.2",
+  "react-native": "0.67.4"
+  "reat-native-check-rooting: "git+https://github.com/teamslogup/reat-native-check-rooting.git",
+}
 ```
 
 ## Usage
 
 ```js
-import { multiply } from "react-native-check-rooting";
+import { isDeviceRooted } from "react-native-check-rooting";
 
 // ...
 
-const result = await multiply(3, 7);
+export default function App() {
+  const [result, setResult] = React.useState<boolean>();
+
+  React.useEffect(() => {
+    isDeviceRooted().then(setResult);
+  }, [result]);
+
+  return (
+    <View style={styles.container}>
+      <Text>is Device Rooted: {`${result}`}</Text>
+    </View>
+  );
+}
 ```
 
 ## Contributing
