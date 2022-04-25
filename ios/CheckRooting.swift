@@ -16,7 +16,7 @@ class CheckRooting: NSObject {
         if UIApplication.shared.canOpenURL(cydiaUrlScheme as URL) {
             return true
         }
-        #if arch(i386) || arch(x86_64)
+        #if targetEnvironment(simulator)
             return false
         #endif
 
